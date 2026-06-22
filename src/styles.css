@@ -23,17 +23,17 @@
 }
 
 :root {
-  --background: oklch(0.08 0.005 240);
-  --foreground: oklch(0.98 0.005 90);
-  --muted: oklch(0.15 0.01 240);
-  --muted-foreground: oklch(0.65 0.02 240);
-  --accent: oklch(0.82 0.18 75);
-  --accent-foreground: oklch(0.1 0 0);
-  --border: oklch(0.22 0.01 240);
-  --card: oklch(0.12 0.008 240);
-  --card-foreground: oklch(0.98 0.005 90);
-  --primary: oklch(0.82 0.18 75);
-  --primary-foreground: oklch(0.1 0 0);
+  --background: oklch(0.985 0.003 90);
+  --foreground: oklch(0.13 0 0);
+  --muted: oklch(0.95 0.004 90);
+  --muted-foreground: oklch(0.45 0.005 90);
+  --accent: oklch(0.58 0.22 27);
+  --accent-foreground: oklch(0.99 0 0);
+  --border: oklch(0.88 0.005 90);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.13 0 0);
+  --primary: oklch(0.13 0 0);
+  --primary-foreground: oklch(0.99 0 0);
 }
 
 @layer base {
@@ -46,18 +46,16 @@
   .font-display { font-family: var(--font-display); letter-spacing: -0.02em; line-height: 0.85; }
   .font-mono { font-family: var(--font-mono); }
   .text-balance { text-wrap: balance; }
-  .noise {
-    position: relative;
-  }
+  .noise { position: relative; }
   .noise::after {
     content: "";
-    position: absolute; inset: 0; pointer-events: none; opacity: 0.04; mix-blend-mode: overlay;
+    position: absolute; inset: 0; pointer-events: none; opacity: 0.05; mix-blend-mode: multiply;
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
   }
   .grain-bg {
     background:
-      radial-gradient(ellipse at top, oklch(0.18 0.02 240) 0%, transparent 60%),
-      radial-gradient(ellipse at bottom, oklch(0.12 0.04 280) 0%, transparent 60%),
+      radial-gradient(ellipse at top, oklch(0.97 0.008 30) 0%, transparent 60%),
+      radial-gradient(ellipse at bottom, oklch(0.96 0.012 30) 0%, transparent 60%),
       var(--background);
   }
 }
