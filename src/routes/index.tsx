@@ -19,7 +19,7 @@ function Index() {
     <div className="grain-bg noise min-h-screen text-foreground overflow-x-hidden">
       <Nav />
       <Hero />
-      <Manifesto />
+      <DroneSelector />
       <Categories />
       <Products />
       <Repairs />
