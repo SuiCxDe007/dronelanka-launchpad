@@ -21,6 +21,7 @@ function Index() {
       <Hero />
       <Manifesto />
       <Categories />
+      <Products />
       <Repairs />
       <Stats />
       <CTA />
