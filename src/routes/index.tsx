@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { motion, useScroll, useTransform, useSpring } from "motion/react";
-import { useRef } from "react";
+import { motion, useScroll, useTransform, useSpring, useMotionValue, animate, useMotionValueEvent } from "motion/react";
+import { useEffect, useRef, useState } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
