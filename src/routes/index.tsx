@@ -141,60 +141,220 @@ function Marquee() {
   );
 }
 
-function Manifesto() {
+function DroneSelector() {
+  const drones = [
+    { name: "DJI Mavic 3 Pro", tag: "Cinematic flagship", spec: "4/3 CMOS · 43min" },
+    { name: "DJI Air 3S", tag: "All-rounder", spec: "Dual cam · 45min" },
+    { name: "DJI Mini 4 Pro", tag: "Sub-249g", spec: "Tri-directional sensing" },
+    { name: "Autel EVO Lite+", tag: "Low-light king", spec: "1\" CMOS · 40min" },
+    { name: "DJI Avata 2", tag: "Cinewhoop FPV", spec: "Immersive · O4" },
+    { name: "GEPRC Mark5", tag: "5\" Freestyle", spec: "Analog/HD ready" },
+    { name: "iFlight Nazgul Evoque", tag: "Long range", spec: "Crossfire · 6S" },
+    { name: "Skydio 2+", tag: "Autonomous", spec: "AI tracking" },
+    { name: "Custom Cinewhoop", tag: "Built in Colombo", spec: "Made to order" },
+  ];
+
+  const N = drones.length;
+  const STEP = 28; // degrees between items on the wheel
+  const rotation = useMotionValue(0);
+  const smooth = useSpring(rotation, { stiffness: 120, damping: 22, mass: 0.6 });
+  const [active, setActive] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const smooth = useSpring(scrollYProgress, { stiffness: 80, damping: 20 });
+  const dragging = useRef(false);
+  const startY = useRef(0);
+  const startRot = useRef(0);
 
-  const text = "We don't sell drones. We keep them in the sky. Every part hand-picked, every solder joint inspected, every repair tested before it leaves the bench.";
-  const words = text.split(" ");
+  useMotionValueEvent(smooth, "change", (v) => {
+    const idx = ((Math.round(-v / STEP) % N) + N) % N;
+    setActive((prev) => (prev === idx ? prev : idx));
+  });
 
-  // background ghost word
-  const ghostX = useTransform(smooth, [0, 1], ["-20%", "20%"]);
-  const ghostScale = useTransform(smooth, [0, 1], [1.2, 1.6]);
+  const snap = () => {
+    const v = rotation.get();
+    const target = Math.round(v / STEP) * STEP;
+    animate(rotation, target, { type: "spring", stiffness: 180, damping: 24 });
+  };
+
+  // Wheel scroll inside the selector area
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let raf = 0;
+    const onWheel = (e: WheelEvent) => {
+      // only hijack when pointer is over the wheel zone
+      e.preventDefault();
+      rotation.set(rotation.get() - e.deltaY * 0.4);
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        // debounce snap
+        clearTimeout((onWheel as any)._t);
+        (onWheel as any)._t = setTimeout(snap, 120);
+      });
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, [rotation]);
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    dragging.current = true;
+    startY.current = e.clientY;
+    startRot.current = rotation.get();
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!dragging.current) return;
+    const dy = e.clientY - startY.current;
+    rotation.set(startRot.current - dy * 0.6);
+  };
+  const onPointerUp = (e: React.PointerEvent) => {
+    if (!dragging.current) return;
+    dragging.current = false;
+    try { (e.target as HTMLElement).releasePointerCapture(e.pointerId); } catch {}
+    snap();
+  };
+
+  const selectIndex = (i: number) => {
+    const current = rotation.get();
+    // find shortest path target
+    const desired = -i * STEP;
+    const diff = ((desired - current) % (STEP * N) + STEP * N) % (STEP * N);
+    const signed = diff > (STEP * N) / 2 ? diff - STEP * N : diff;
+    animate(rotation, current + signed, { type: "spring", stiffness: 160, damping: 22 });
+  };
+
+  const activeDrone = drones[active];
 
   return (
-    <section ref={ref} className="relative py-40 px-6 md:px-10 overflow-hidden">
-      <motion.div
-        style={{ x: ghostX, scale: ghostScale }}
-        aria-hidden
-        className="absolute inset-0 flex items-center justify-center pointer-events-none"
-      >
-        <span className="font-display text-[36vw] text-foreground/[0.03] leading-none whitespace-nowrap">
-          SKY.
-        </span>
-      </motion.div>
-
-      <div className="relative max-w-[1400px] mx-auto">
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="font-mono text-xs uppercase tracking-[0.3em] text-accent mb-10"
-        >
-          ◉ Our manifesto
-        </motion.p>
-
-        <p className="font-display text-4xl md:text-7xl text-balance leading-[1.05]">
-          {words.map((w, i) => {
-            const highlight = w === "sky." || w === "bench.";
-            return (
-              <motion.span
-                key={i}
-                initial={{ opacity: 0.08, y: 14, filter: "blur(6px)" }}
-                whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                viewport={{ once: false, margin: "-25% 0px -25% 0px" }}
-                transition={{ duration: 0.6, delay: i * 0.025, ease: [0.16, 1, 0.3, 1] }}
-                className={`inline-block mr-[0.25em] ${highlight ? "text-accent italic" : ""}`}
-              >
-                {w}
-              </motion.span>
-            );
-          })}
+    <section className="relative py-32 md:py-40 overflow-hidden border-y border-border bg-card/30">
+      <div className="px-6 md:px-10 max-w-[1600px] mx-auto mb-16 md:mb-24 flex items-end justify-between gap-8 flex-wrap">
+        <div>
+          <p className="font-mono text-xs uppercase tracking-[0.3em] text-accent mb-4">◉ Pick your machine</p>
+          <h2 className="font-display text-6xl md:text-9xl leading-[0.85]">
+            THE<br/><span className="text-accent italic">fleet.</span>
+          </h2>
+        </div>
+        <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground max-w-xs">
+          [ scroll · drag · tap a name to spin the wheel ]
         </p>
+      </div>
+
+      <div
+        ref={ref}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+        className="relative h-[640px] md:h-[720px] select-none touch-none"
+      >
+        {/* Half circle wheel anchored to left edge */}
+        <div className="absolute top-1/2 -translate-y-1/2 -left-[55vw] md:-left-[42vw] w-[110vw] md:w-[84vw] aspect-square">
+          {/* ring border */}
+          <div className="absolute inset-0 rounded-full border border-border" />
+          <div className="absolute inset-[6%] rounded-full border border-border/60" />
+          <div className="absolute inset-[12%] rounded-full border border-dashed border-border/40" />
+
+          {/* selector indicator at 3 o'clock (right edge of circle) */}
+          <div className="absolute top-1/2 right-0 -translate-y-1/2 translate-x-2 flex items-center gap-3 z-20">
+            <span className="h-px w-12 bg-accent" />
+            <span className="h-3 w-3 rounded-full bg-accent shadow-[0_0_0_6px_rgba(0,0,0,0.04)]" />
+          </div>
+
+          <motion.div style={{ rotate: smooth }} className="absolute inset-0">
+            {drones.map((d, i) => {
+              const angle = i * STEP;
+              const isActive = i === active;
+              return (
+                <div
+                  key={d.name}
+                  className="absolute top-1/2 left-1/2 origin-left"
+                  style={{
+                    transform: `rotate(${angle}deg) translate(0, -50%)`,
+                    width: "50%",
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => selectIndex(i)}
+                    className="w-full flex items-center justify-end pr-[3%] group"
+                  >
+                    <motion.span
+                      animate={{
+                        rotate: -angle - smooth.get() * 0 /* counter handled below via style */,
+                      }}
+                      className="block"
+                    >
+                      <CounterRotate angle={angle} rotation={smooth}>
+                        <span
+                          className={`font-display whitespace-nowrap transition-all duration-300 ${
+                            isActive
+                              ? "text-foreground text-3xl md:text-5xl"
+                              : "text-muted-foreground/50 hover:text-foreground/70 text-xl md:text-2xl"
+                          }`}
+                        >
+                          {d.name}
+                        </span>
+                      </CounterRotate>
+                    </motion.span>
+                  </button>
+                </div>
+              );
+            })}
+          </motion.div>
+        </div>
+
+        {/* Active drone display */}
+        <div className="absolute top-1/2 -translate-y-1/2 right-4 md:right-16 w-[55%] md:w-[48%] max-w-[640px] z-10">
+          <motion.div
+            key={activeDrone.name}
+            initial={{ opacity: 0, y: 20, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <div className="relative aspect-square bg-foreground rounded-2xl overflow-hidden">
+              {/* placeholder 3D-ish drone */}
+              <div className="absolute inset-0 grain-bg opacity-30" />
+              <motion.div
+                animate={{ y: [0, -12, 0], rotate: [-2, 2, -2] }}
+                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute inset-0 flex items-center justify-center"
+              >
+                <span className="font-display text-[8rem] md:text-[12rem] text-background/10 leading-none">
+                  {String(active + 1).padStart(2, "0")}
+                </span>
+              </motion.div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-background/40">
+                  [ 3D preview · placeholder ]
+                </span>
+              </div>
+              <div className="absolute top-4 right-4 font-mono text-[10px] uppercase tracking-widest text-background/60">
+                {String(active + 1).padStart(2, "0")} / {String(N).padStart(2, "0")}
+              </div>
+            </div>
+
+            <div className="mt-6 flex items-end justify-between gap-6">
+              <div>
+                <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent mb-2">{activeDrone.tag}</p>
+                <h3 className="font-display text-3xl md:text-5xl leading-tight">{activeDrone.name}</h3>
+                <p className="font-mono text-xs text-muted-foreground mt-2">{activeDrone.spec}</p>
+              </div>
+              <a
+                href="https://dronelanka.com"
+                className="font-mono text-xs uppercase tracking-widest bg-accent text-accent-foreground px-5 py-3 rounded-full hover:scale-105 transition shrink-0"
+              >
+                View →
+              </a>
+            </div>
+          </motion.div>
+        </div>
       </div>
     </section>
   );
+}
+
+function CounterRotate({ angle, rotation, children }: { angle: number; rotation: any; children: React.ReactNode }) {
+  const counter = useTransform(rotation, (r: number) => -(angle + r));
+  return <motion.span style={{ rotate: counter, display: "inline-block" }}>{children}</motion.span>;
 }
 
 function Categories() {
