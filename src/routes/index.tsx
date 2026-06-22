@@ -277,24 +277,17 @@ function DroneSelector() {
                     onClick={() => selectIndex(i)}
                     className="w-full flex items-center justify-end pr-[3%] group"
                   >
-                    <motion.span
-                      animate={{
-                        rotate: -angle - smooth.get() * 0 /* counter handled below via style */,
-                      }}
-                      className="block"
-                    >
-                      <CounterRotate angle={angle} rotation={smooth}>
-                        <span
-                          className={`font-display whitespace-nowrap transition-all duration-300 ${
-                            isActive
-                              ? "text-foreground text-3xl md:text-5xl"
-                              : "text-muted-foreground/50 hover:text-foreground/70 text-xl md:text-2xl"
-                          }`}
-                        >
-                          {d.name}
-                        </span>
-                      </CounterRotate>
-                    </motion.span>
+                    <CounterRotate angle={angle} rotation={smooth}>
+                      <span
+                        className={`font-display whitespace-nowrap transition-all duration-300 ${
+                          isActive
+                            ? "text-foreground text-3xl md:text-5xl"
+                            : "text-muted-foreground/50 hover:text-foreground/70 text-xl md:text-2xl"
+                        }`}
+                      >
+                        {d.name}
+                      </span>
+                    </CounterRotate>
                   </button>
                 </div>
               );
