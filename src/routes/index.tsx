@@ -260,6 +260,92 @@ function CategoryRow({ id, title, desc, count, index }: { id: string; title: str
   );
 }
 
+function Products() {
+  const products = [
+    { sku: "DL-001", name: "DJI Mavic 3 Pro", cat: "Drone", price: "Rs 745,000", tag: "Flagship", swatch: "bg-foreground" },
+    { sku: "DL-014", name: "T-Motor F90 2207", cat: "Motor", price: "Rs 12,500", tag: "FPV", swatch: "bg-accent" },
+    { sku: "DL-029", name: "GEPRC Mark5 Frame", cat: "Frame", price: "Rs 38,900", tag: "5\" Freestyle", swatch: "bg-foreground" },
+    { sku: "DL-047", name: "Tattu R-Line 1550mAh 6S", cat: "Battery", price: "Rs 9,800", tag: "100C", swatch: "bg-accent" },
+    { sku: "DL-052", name: "DJI Goggles 2", cat: "FPV Gear", price: "Rs 198,000", tag: "Micro-OLED", swatch: "bg-foreground" },
+    { sku: "DL-068", name: "HQProp 5.1×4.6×3", cat: "Propellers", price: "Rs 1,450", tag: "Set of 4", swatch: "bg-accent" },
+    { sku: "DL-073", name: "RadioMaster TX16S MKII", cat: "Controller", price: "Rs 84,000", tag: "ELRS", swatch: "bg-foreground" },
+    { sku: "DL-091", name: "GoPro Hero 12 Black", cat: "Camera", price: "Rs 165,000", tag: "5.3K60", swatch: "bg-accent" },
+  ];
+
+  return (
+    <section id="shop" className="relative py-32 px-6 md:px-10 border-y border-border bg-card/40">
+      <div className="max-w-[1600px] mx-auto">
+        <div className="mb-16 flex items-end justify-between gap-8 flex-wrap">
+          <div>
+            <p className="font-mono text-xs uppercase tracking-[0.3em] text-accent mb-4">◉ The shelf</p>
+            <h2 className="font-display text-6xl md:text-9xl leading-[0.85]">
+              FEATURED<br/><span className="text-accent italic">drops.</span>
+            </h2>
+          </div>
+          <a href="https://dronelanka.com" className="font-mono text-xs uppercase tracking-widest border border-foreground px-6 py-4 rounded-full hover:bg-foreground hover:text-background transition">
+            Shop all →
+          </a>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-border border border-border">
+          {products.map((p, i) => (
+            <ProductCard key={p.sku} {...p} index={i} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ProductCard({ sku, name, cat, price, tag, swatch, index }: { sku: string; name: string; cat: string; price: string; tag: string; swatch: string; index: number }) {
+  return (
+    <motion.a
+      href="https://dronelanka.com"
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.6, delay: (index % 4) * 0.08, ease: [0.16, 1, 0.3, 1] }}
+      className="group relative bg-background hover:bg-card transition-colors p-6 flex flex-col overflow-hidden"
+    >
+      <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-6">
+        <span>{sku}</span>
+        <span className="text-accent">{tag}</span>
+      </div>
+
+      <div className={`relative aspect-square ${swatch} overflow-hidden mb-6`}>
+        <motion.span
+          aria-hidden
+          className="absolute inset-0 flex items-center justify-center font-display text-[6rem] text-background/10 group-hover:text-background/20 transition-colors"
+          whileHover={{ scale: 1.1 }}
+        >
+          {cat.charAt(0)}
+        </motion.span>
+        <div className="absolute bottom-3 left-3 font-mono text-[10px] uppercase tracking-widest text-background/70">
+          {cat}
+        </div>
+        <motion.div
+          aria-hidden
+          className="absolute inset-0 bg-accent origin-bottom"
+          initial={{ scaleY: 0 }}
+          whileHover={{ scaleY: 1 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        />
+        <span className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 font-mono text-xs uppercase tracking-widest text-accent-foreground">
+          View →
+        </span>
+      </div>
+
+      <h3 className="font-display text-2xl md:text-3xl leading-tight group-hover:text-accent transition-colors">
+        {name}
+      </h3>
+      <div className="mt-auto pt-6 flex items-center justify-between font-mono text-xs">
+        <span className="text-foreground">{price}</span>
+        <span className="text-muted-foreground uppercase tracking-widest">In stock</span>
+      </div>
+    </motion.a>
+  );
+}
+
 function Repairs() {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
